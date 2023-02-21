@@ -23,9 +23,9 @@ class CallSimpleRegisterWidgetState extends State<CallSimpleRegisterWidget> {
   bool running = false;
   bool isLoading = false;
 
-  SharedPreferences _preferences;
+  SharedPreferences? _preferences;
 
-  String _hashPassword;
+  String? _hashPassword;
 
   // get information from storage of user settings (exec at init of page)
   void _loadSettings() async {
@@ -34,14 +34,14 @@ class CallSimpleRegisterWidgetState extends State<CallSimpleRegisterWidget> {
   }
 
   _saveSettings() async {
-    await _preferences.setString('contact', _username.text);
-    await _preferences.setString(
+    await _preferences!.setString('contact', _username.text);
+    await _preferences!.setString(
         'sip_uri', "sip:${_username.text}@${_domain.text}");
-    await _preferences.setString('display_name', _username.text);
-    await _preferences.setString('password', _password.text);
-    await _preferences.setString('hash', _hashPassword);
-    await _preferences.setString('domain', _domain.text);
-    await _preferences.setBool('loggedIn', true);
+    await _preferences!.setString('display_name', _username.text);
+    await _preferences!.setString('password', _password.text);
+    await _preferences!.setString('hash', _hashPassword!);
+    await _preferences!.setString('domain', _domain.text);
+    await _preferences!.setBool('loggedIn', true);
   }
 
   _getHash(TextEditingController _controller) {
@@ -62,7 +62,7 @@ class CallSimpleRegisterWidgetState extends State<CallSimpleRegisterWidget> {
           title: Text('$alertFieldName is empty'),
           content: Text('Please enter $alertFieldName!'),
           actions: <Widget>[
-            FlatButton(
+            ElevatedButton(
               child: Text('Ok'),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -101,7 +101,7 @@ class CallSimpleRegisterWidgetState extends State<CallSimpleRegisterWidget> {
             ),
           ),
           validator: (value) {
-            if (value.isEmpty) {
+            if (value!.isEmpty) {
               // validation that non empty
               return 'Please enter your phone number';
             } else if (value.length < 6) {
@@ -112,7 +112,7 @@ class CallSimpleRegisterWidgetState extends State<CallSimpleRegisterWidget> {
             return null;
           },
           keyboardType: TextInputType.phone,
-          onSaved: (String value) {},
+          onSaved: (String? value) {},
         ),
       );
 
@@ -130,13 +130,13 @@ class CallSimpleRegisterWidgetState extends State<CallSimpleRegisterWidget> {
             ),
           ),
           validator: (value) {
-            if (value.isEmpty) {
+            if (value!.isEmpty) {
               return 'Please enter password';
             }
             return null;
           },
           keyboardType: TextInputType.text,
-          onSaved: (String value) {},
+          onSaved: (String? value) {},
         ),
       );
 
@@ -153,13 +153,13 @@ class CallSimpleRegisterWidgetState extends State<CallSimpleRegisterWidget> {
             ),
           ),
           validator: (value) {
-            if (value.isEmpty) {
+            if (value!.isEmpty) {
               return 'Please enter domain';
             }
             return null;
           },
           keyboardType: TextInputType.text,
-          onSaved: (String value) {},
+          onSaved: (String? value) {},
         ),
       );
 
@@ -172,7 +172,7 @@ class CallSimpleRegisterWidgetState extends State<CallSimpleRegisterWidget> {
           minWidth: MediaQuery.of(context).size.width,
           padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
           onPressed: () async {
-            if (formKey.currentState.validate()) {
+            if (formKey.currentState!.validate()) {
               _hashPassword = _getHash(_password);
               _saveSettings();
 

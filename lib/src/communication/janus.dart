@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_webrtc/webrtc.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/io.dart';
 
 // set global variable
 Janus janus = new Janus();
 
-SharedPreferences _preferences;
+SharedPreferences? _preferences;
 
 class Janus {
   static final Janus _janus = new Janus._internal();
@@ -19,7 +19,7 @@ class Janus {
     return _janus;
   }
 
-  IOWebSocketChannel _channel;
+  IOWebSocketChannel? _channel;
   bool _onConnected = false;
 
   bool get status => _onConnected;
@@ -28,8 +28,8 @@ class Janus {
 
   _reset() {
     if (_channel != null) {
-      if (_channel.sink != null) {
-        _channel.sink.close();
+      if (_channel!.sink != null) {
+        _channel!.sink.close();
         _onConnected = false;
         _onAnswered = false;
         _onRinging = false;
@@ -61,22 +61,22 @@ class Janus {
       }
 
       /// listen for events
-      _channel.stream.listen(onMessage);
+      _channel!.stream.listen(onMessage);
     } catch (e) {
       throw e;
     }
   }
 
   // JANUS variables for returned information
-  Map<String, dynamic> _message;
-  String _transactionID;
-  int _sessionID;
-  int _handleID;
+  Map<String, dynamic>? _message;
+  String? _transactionID;
+  int? _sessionID;
+  int? _handleID;
 
   // SDP variables used.
-  RTCSessionDescription _description;
-  MediaStream _stream;
-  RTCPeerConnection _pc;
+  RTCSessionDescription? _description;
+  MediaStream? _stream;
+  RTCPeerConnection? _pc;
   dynamic onLocalStream;
   dynamic onRemoteStream;
 
@@ -110,8 +110,8 @@ class Janus {
 
   send(Object message) {
     if (_channel != null) {
-      if (_channel.sink != null) {
-        _channel.sink.add(json.encode(message));
+      if (_channel!.sink != null) {
+        _channel!.sink.add(json.encode(message));
       }
     }
   }
@@ -122,50 +122,49 @@ class Janus {
 
     print("DEBUG ::: GOT SERVER MESSAGE >>> $_message");
 
-    switch (_message['janus']) {
+    switch (_message!['janus']) {
       case 'success':
         if (!_onAttach) {
           final _attach = {
             "janus": "attach",
             "plugin": "janus.plugin.sip",
             "transaction": "$_transactionID",
-            "session_id": _message['data']['id'],
+            "session_id": _message!['data']['id'],
           };
           this.send(_attach);
           _onAttach = true;
-          _sessionID = _message['data']['id'];
+          _sessionID = _message!['data']['id'];
           break;
         } else if (!_onRegister && _onAttach) {
           final _register = {
             "body": {
-              "authuser": "${_preferences.getString('contact')}",
-              "display_name": "${_preferences.getString('display_name')}",
-              "ha1_secret": "${_preferences.getString('hash')}",
-              "proxy": "sip:${_preferences.getString('domain')}:5060",
+              "authuser": "${_preferences!.getString('contact')}",
+              "display_name": "${_preferences!.getString('display_name')}",
+              "ha1_secret": "${_preferences!.getString('hash')}",
+              "proxy": "sip:${_preferences!.getString('domain')}:5060",
               "request": "register",
-              "username": "${_preferences.getString('sip_uri')}"
+              "username": "${_preferences!.getString('sip_uri')}"
             },
-            "handle_id": _message['data']['id'],
+            "handle_id": _message!['data']['id'],
             "janus": "message",
             "session_id": _sessionID,
             "transaction": "$_transactionID"
           };
           this.send(_register);
           _onRegister = true;
-          _handleID = _message['data']['id'];
+          _handleID = _message!['data']['id'];
           break;
         }
 
         break;
       case 'event':
-        if (_message['plugindata']['data']['error'] != null) {
+        if (_message!['plugindata']['data']['error'] != null) {
           print(
-              "EVENT ERROR >>> ${_message['plugindata']['data']['error']} >>> ${_message['plugindata']['data']['error_code']}");
-
+              "EVENT ERROR >>> ${_message!['plugindata']['data']['error']} >>> ${_message!['plugindata']['data']['error_code']}");
           break;
         }
 
-        switch (_message['plugindata']['data']['result']['event']) {
+        switch (_message!['plugindata']['data']['result']['event']) {
           case "registering":
             print("RESEND REGISTRATION >>>");
 
@@ -177,15 +176,15 @@ class Janus {
               "body": {
                 "request": "call",
                 "uri":
-                    "sip:${_preferences.getString('destination')}@${_preferences.getString('domain')}"
+                    "sip:${_preferences!.getString('destination')}@${_preferences!.getString('domain')}"
               },
               "handle_id": _handleID,
               "janus": "message",
               "session_id": _sessionID,
               "transaction": "$_transactionID",
               "jsep": {
-                "sdp": "${_description.sdp}",
-                "type": "${_description.type}"
+                "sdp": "${_description!.sdp}",
+                "type": "${_description!.type}"
               },
             };
             this.send(_call);
@@ -206,7 +205,7 @@ class Janus {
           case "accepted":
             print("ACCEPTED >>>");
 
-            _sdpAnswer(_message['jsep']['sdp']);
+            _sdpAnswer(_message!['jsep']['sdp']);
             _onAnswered = true;
             break;
           case "progress":
@@ -271,18 +270,18 @@ class Janus {
         _reset();
         break;
       case "incomingcall":
-        _sdpIncomingAnswer(_message['jsep']['sdp'], _message['jsep']['type']);
+        _sdpIncomingAnswer(_message!['jsep']['sdp'], _message!['jsep']['type']);
         final answer = {
           "body": {
             "request": "accept",
             "uri":
-                "sip:${_preferences.getString('destination')}@${_preferences.getString('domain')}"
+                "sip:${_preferences!.getString('destination')}@${_preferences!.getString('domain')}"
           },
           "janus": "message",
           "handle_id": _handleID,
           "session_id": _sessionID,
           "transaction": "$_transactionID",
-          "jsep": {"sdp": "${_description.sdp}", "type": "answer"},
+          "jsep": {"sdp": "${_description!.sdp}", "type": "answer"},
         };
         this.send(answer);
 
@@ -306,7 +305,7 @@ class Janus {
 
   start() {
     if (_channel != null) {
-      if (_channel.sink != null && _onConnected) {
+      if (_channel!.sink != null && _onConnected) {
         final String trans = _generateID(12);
         final _create = {'janus': 'create', 'transaction': '$trans'};
         send(_create);
@@ -334,7 +333,7 @@ class Janus {
       send(_create);
 
       /// listen for events
-      _channel.stream.listen(onMessage);
+      _channel!.stream.listen(onMessage);
     } catch (e) {
       throw e;
     }
@@ -363,20 +362,20 @@ class Janus {
       _stream = await navigator.getUserMedia(mediaConstraints);
       if (this.onLocalStream != null) this.onLocalStream(_stream);
       _pc = await createPeerConnection(configuration, _config);
-      _pc.onIceGatheringState = (state) async {
+      _pc!.onIceGatheringState = (state) async {
         if (state == RTCIceGatheringState.RTCIceGatheringStateComplete) {
-          await _pc.getLocalDescription();
+          await _pc!.getLocalDescription();
         }
       };
-      _pc.addStream(_stream);
-      _description = await _pc.createOffer(_constraints);
-      _pc.setLocalDescription(_description);
+      _pc!.addStream(_stream!);
+      _description = await _pc!.createOffer(_constraints);
+      _pc!.setLocalDescription(_description!);
     }
   }
 
   _sdpAnswer(data) async {
     if (_pc == null) return;
-    _pc.setRemoteDescription(new RTCSessionDescription(data, 'answer'));
+    _pc!.setRemoteDescription(new RTCSessionDescription(data, 'answer'));
   }
 
   _sdpIncomingAnswer(String sdp, String type) async {
@@ -388,11 +387,11 @@ class Janus {
       _stream = await navigator.getUserMedia(mediaConstraints);
       if (this.onLocalStream != null) this.onLocalStream(_stream);
       _pc = await createPeerConnection(configuration, _config);
-      _pc.setRemoteDescription(RTCSessionDescription(sdp, type));
-      _pc.addStream(_stream);
-      _description = await _pc.createAnswer(_constraints);
+      _pc!.setRemoteDescription(RTCSessionDescription(sdp, type));
+      _pc!.addStream(_stream!);
+      _description = await _pc!.createAnswer(_constraints);
 
-      _pc.setLocalDescription(_description);
+      _pc!.setLocalDescription(_description!);
     }
   }
 

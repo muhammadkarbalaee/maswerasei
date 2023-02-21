@@ -7,7 +7,7 @@ class Dealer {
 
   // dealer color schema
   static Color get mainColor => Color(0xff6b406b);
-  static Color get secColor => Colors.yellow[100];
+  static Color get secColor => Colors.yellow[100]!;
   static Color get swatchColor => Color(0xffffcc00);
 
   // dealer images

@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 
 class ActionButton extends StatefulWidget {
-  final String title;
-  final String subTitle;
-  final IconData icon;
-  final bool checked;
-  final bool number;
-  final Color fillColor;
-  final Function() onPressed;
-  final Function() onLongPress;
+  final String? title;
+  final String? subTitle;
+  final IconData? icon;
+  final bool? checked;
+  final bool? number;
+  final Color? fillColor;
+  final Function()? onPressed;
+  final Function()? onLongPress;
 
   const ActionButton(
-      {Key key,
+      {
+      Key? key,
       this.title,
       this.subTitle = '',
       this.icon,
@@ -41,15 +42,15 @@ class _ActionButtonState extends State<ActionButton> {
               onPressed: widget.onPressed,
               splashColor: widget.fillColor != null
                   ? widget.fillColor
-                  : (widget.checked ? Colors.white : Colors.blue),
+                  : (widget.checked! ? Colors.white : Colors.blue),
               fillColor: widget.fillColor != null
                   ? widget.fillColor
-                  : (widget.checked ? Colors.blue : Colors.white),
+                  : (widget.checked! ? Colors.blue : Colors.white),
               elevation: 10.0,
               shape: CircleBorder(),
               child: Padding(
                 padding: const EdgeInsets.all(15.0),
-                child: widget.number
+                child: widget.number!
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
@@ -73,19 +74,19 @@ class _ActionButtonState extends State<ActionButton> {
                         size: 30.0,
                         color: widget.fillColor != null
                             ? Colors.white
-                            : (widget.checked ? Colors.white : Colors.blue),
+                            : (widget.checked! ? Colors.white : Colors.blue),
                       ),
               ),
             )),
-        widget.number
+        widget.number!
             ? Container(
                 margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 2.0))
             : Container(
                 margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
-                child: (widget.number || widget.title == null)
+                child: (widget.number! || widget.title == null)
                     ? null
                     : Text(
-                        widget.title,
+                        widget.title!,
                         style: TextStyle(
                           fontSize: 15.0,
                           color: widget.fillColor != null

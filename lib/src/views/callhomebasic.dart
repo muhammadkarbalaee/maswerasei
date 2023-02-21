@@ -11,18 +11,18 @@ class CallInputWidget extends StatefulWidget {
 class CallInputWidgetSate extends State<CallInputWidget> {
   final TextEditingController _destination = new TextEditingController();
 
-  SharedPreferences _preferences;
-  String _account;
+  SharedPreferences? _preferences;
+  String? _account;
   _loadSettings() async {
     _preferences = await SharedPreferences.getInstance();
-    if (_preferences.containsKey('contact')) {
-      _account = _preferences.getString('contact');
+    if (_preferences!.containsKey('contact')) {
+      _account = _preferences!.getString('contact');
     }
     this.setState(() {});
   }
 
   _saveSettings() async {
-    await _preferences.setString('destination', _destination.text);
+    await _preferences!.setString('destination', _destination.text);
   }
 
   @override
@@ -49,7 +49,7 @@ class CallInputWidgetSate extends State<CallInputWidget> {
             title: Text('Target is empty.'),
             content: Text('Please enter a number to dail!'),
             actions: <Widget>[
-              FlatButton(
+              ElevatedButton(
                 child: Text('OK'),
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -63,7 +63,7 @@ class CallInputWidgetSate extends State<CallInputWidget> {
     }
     // set ::: call destination and go to calling screen
     this.setState(() {});
-    _preferences.setString('destination', _destination.text);
+    _preferences!.setString('destination', _destination.text);
     Navigator.pushNamed(context, '/call');
   }
 

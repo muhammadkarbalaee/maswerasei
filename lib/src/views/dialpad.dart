@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_webrtc/webrtc.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:web_socket_channel/io.dart';
 
 class DialPadWidget extends StatefulWidget {
   final IOWebSocketChannel channel;
 
-  DialPadWidget({Key key, @required this.channel}) : super(key: key);
+  DialPadWidget(Key key,{required this.channel}) : super(key: key);
 
   @override
   _DialPadWidget createState() => _DialPadWidget();
@@ -19,13 +19,13 @@ class _DialPadWidget extends State<DialPadWidget> {
   /// initiate connection to websocket server
   IOWebSocketChannel get _socket => widget.channel;
 
-  Map<String, dynamic> _message;
-  int _sessionID;
-  int _handleID;
+  Map<String, dynamic>? _message;
+  int? _sessionID;
+  int? _handleID;
 
-  RTCSessionDescription _description;
-  MediaStream _stream;
-  RTCPeerConnection _pc;
+  RTCSessionDescription? _description;
+  MediaStream? _stream;
+  RTCPeerConnection? _pc;
   dynamic onLocalStream;
   dynamic onRemoteStream;
 
@@ -57,12 +57,12 @@ class _DialPadWidget extends State<DialPadWidget> {
   bool _onConnected = false;
 
   // TOREMOVE
-  List<Object> _show = new List<Object>();
+  List<Object> _show = [];
 
   // show time on call
   String _timeLabel = '00:00';
-  Future<String> _callState;
-  Timer _timer;
+  Future<String>? _callState;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -104,18 +104,18 @@ class _DialPadWidget extends State<DialPadWidget> {
 
               print("DEBUG :::: PARSED MESSAGE >> $_message");
 
-              switch (_message['janus']) {
+              switch (_message!['janus']) {
                 case 'success':
                   if (!_onAttach) {
                     final _attach = {
                       "janus": "attach",
                       "plugin": "janus.plugin.sip",
                       "transaction": "${_generateID(12)}",
-                      "session_id": _message['data']['id'],
+                      "session_id": _message!['data']['id'],
                     };
                     _send(_attach);
                     _onAttach = true;
-                    _sessionID = _message['data']['id'];
+                    _sessionID = _message!['data']['id'];
                     break;
                   } else if (!_onRegister) {
                     final _register = {
@@ -127,28 +127,28 @@ class _DialPadWidget extends State<DialPadWidget> {
                         "request": "register",
                         "username": "sip:username@domain"
                       },
-                      "handle_id": _message['data']['id'],
+                      "handle_id": _message!['data']['id'],
                       "janus": "message",
                       "session_id": _sessionID,
                       "transaction": "${_generateID(12)}"
                     };
                     _send(_register);
                     _onRegister = true;
-                    _handleID = _message['data']['id'];
+                    _handleID = _message!['data']['id'];
                     break;
                   }
 
                   break;
                 case 'event':
-                  if (_message['plugindata']['data']['error'] != null) {
+                  if (_message!['plugindata']['data']['error'] != null) {
                     print(
-                        "EVENT ERROR >>> ${_message['plugindata']['data']['error']} >>> ${_message['plugindata']['data']['error_code']}");
+                        "EVENT ERROR >>> ${_message!['plugindata']['data']['error']} >>> ${_message!['plugindata']['data']['error_code']}");
                     print("PARSED MESSAGE >> $_message");
 
                     break;
                   }
 
-                  switch (_message['plugindata']['data']['result']['event']) {
+                  switch (_message!['plugindata']['data']['result']['event']) {
                     case "registering":
                       print("RESEND REGISTRATION >>>");
                       print("PARSED MESSAGE >> $_message");
@@ -165,8 +165,8 @@ class _DialPadWidget extends State<DialPadWidget> {
                         "session_id": _sessionID,
                         "transaction": "${_generateID(12)}",
                         "jsep": {
-                          "sdp": "${_description.sdp}",
-                          "type": "${_description.type}"
+                          "sdp": "${_description!.sdp}",
+                          "type": "${_description!.type}"
                         },
                       };
                       _send(_call);
@@ -189,9 +189,9 @@ class _DialPadWidget extends State<DialPadWidget> {
                     case "accepted":
                       print("ACCEPTED >>>");
                       print(
-                          "PARSED MESSAGE >> $_message ::: ${_message['jsep']['sdp']}");
+                          "PARSED MESSAGE >> $_message ::: ${_message!['jsep']['sdp']}");
 
-                      _sdpAnswer(_message['jsep']['sdp']);
+                      _sdpAnswer(_message!['jsep']['sdp']);
 
                       if (_timeLabel == "00:00") {
                         _startTimer();
@@ -208,7 +208,7 @@ class _DialPadWidget extends State<DialPadWidget> {
                       print("HANGUP >>>");
                       print("PARSED MESSAGE >> $_message");
 
-                      if (_timer != null) _timer.cancel();
+                      if (_timer != null) _timer!.cancel();
                       break;
                     default:
                   }
@@ -232,7 +232,7 @@ class _DialPadWidget extends State<DialPadWidget> {
                   print("TIMEOUT >>> CLOSING(); ");
                   print("PARSED MESSAGE >> $_message");
 
-                  if (_timer != null) _timer.cancel();
+                  if (_timer != null) _timer!.cancel();
                   if (_socket.sink != null) _socket.sink.close();
                   break;
                 case 'detached':
@@ -310,7 +310,7 @@ class _DialPadWidget extends State<DialPadWidget> {
               .join(':');
         });
       } else {
-        _timer.cancel();
+        _timer!.cancel();
       }
     });
   }
@@ -324,20 +324,20 @@ class _DialPadWidget extends State<DialPadWidget> {
       _stream = await navigator.getUserMedia(mediaConstraints);
       if (this.onLocalStream != null) this.onLocalStream(_stream);
       _pc = await createPeerConnection(configuration, _config);
-      _pc.onIceGatheringState = (state) async {
+      _pc!.onIceGatheringState = (state) async {
         if (state == RTCIceGatheringState.RTCIceGatheringStateComplete) {
-          await _pc.getLocalDescription();
+          await _pc!.getLocalDescription();
         }
       };
-      _pc.addStream(_stream);
-      _description = await _pc.createOffer(_constraints);
-      print('DEBUG ::: SDP >>> createOffer ${_description.sdp}');
-      _pc.setLocalDescription(_description);
+      _pc!.addStream(_stream!);
+      _description = await _pc!.createOffer(_constraints);
+      print('DEBUG ::: SDP >>> createOffer ${_description!.sdp}');
+      _pc!.setLocalDescription(_description!);
     }
   }
 
   _sdpAnswer(data) async {
     if (_pc == null) return;
-    _pc.setRemoteDescription(new RTCSessionDescription(data, 'answer'));
+    _pc!.setRemoteDescription(new RTCSessionDescription(data, 'answer'));
   }
 }

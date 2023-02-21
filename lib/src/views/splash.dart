@@ -17,7 +17,7 @@ class _SplashWidgetState extends State<SplashWidget> {
   bool _failed = false;
 
   // persistent storgae
-  SharedPreferences _preferences;
+  SharedPreferences? _preferences;
 
   @override
   void initState() {
@@ -52,7 +52,7 @@ class _SplashWidgetState extends State<SplashWidget> {
 
     Timer(Duration(seconds: 7), () {
       // check person has ever registered before
-      if (_preferences.containsKey('loggedIn')) {
+      if (_preferences!.containsKey('loggedIn')) {
         Navigator.pop(context);
         Navigator.pushNamed(context, '/test');
       } else {
@@ -93,7 +93,7 @@ class _SplashWidgetState extends State<SplashWidget> {
                       )
                     : Container(),
                 _failed
-                    ? OutlineButton(
+                    ? ElevatedButton(
                         onPressed: () {
                           _login();
                         },

@@ -87,7 +87,7 @@ class _CallScreenWidget extends State<CallScreenWidget> {
         fillColor: Colors.red,
         onPressed: () {
           janus.hangup();
-          if (_timer != null) _timer.cancel();
+          if (_timer != null) _timer!.cancel();
           Timer(Duration(seconds: 2), () {
             Navigator.of(context).pop();
           });
@@ -140,13 +140,13 @@ class _CallScreenWidget extends State<CallScreenWidget> {
     );
   }
 
-  Timer _timer;
+  Timer? _timer;
   String _timeLabel = '00:00';
 
-  SharedPreferences _preferences;
-  String _destination;
-  String _callStatus;
-  Color _callStatusColor;
+  SharedPreferences? _preferences;
+  String? _destination;
+  String? _callStatus;
+  Color? _callStatusColor;
 
   _onData(message) {
     print("DEBUG ::: GOT MESSAGE (CALL SCREEN ) >>> $message");
@@ -160,7 +160,7 @@ class _CallScreenWidget extends State<CallScreenWidget> {
 
   _loadSettings() async {
     _preferences = await SharedPreferences.getInstance();
-    _destination = _preferences.getString('destination');
+    _destination = _preferences!.getString('destination');
     this.setState(() {});
   }
 
@@ -188,13 +188,13 @@ class _CallScreenWidget extends State<CallScreenWidget> {
           }
         });
       } else {
-        _timer.cancel();
+        _timer!.cancel();
       }
     });
   }
 
   void _backToDialPad() {
-    _timer.cancel();
+    _timer!.cancel();
     Timer(Duration(seconds: 5), () {
       Navigator.of(context).pop();
     });
@@ -203,7 +203,7 @@ class _CallScreenWidget extends State<CallScreenWidget> {
   bool _audioMuted = false;
   bool _speakerOn = false;
   bool _hold = false;
-  String _holdOriginator;
+  String? _holdOriginator;
 
   void _muteAudio() {
     if (_audioMuted) {
